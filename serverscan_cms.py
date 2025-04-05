@@ -10,56 +10,56 @@ from datetime import datetime
 app = Flask(__name__)
 
 HTML_TEMPLATE = """<!DOCTYPE html>
-<html lang=\"ar\">
+<html lang="en">
 <head>
-    <meta charset=\"UTF-8\">
-    <title>فحص السيرفر - ServerScan CMS</title>
-    <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css\" rel=\"stylesheet\">
+    <meta charset="UTF-8">
+    <title>Server Scan - ServerScan CMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class=\"bg-light text-center\">
-    <div class=\"container py-5\">
-        <h1 class=\"mb-4\">ServerScan CMS</h1>
-        <h5 class=\"text-muted mb-4\">بواسطة kader11000 | التاريخ: {{ now }}</h5>
+<body class="bg-light text-center">
+    <div class="container py-5">
+        <h1 class="mb-4">ServerScan CMS</h1>
+        <h5 class="text-muted mb-4">by kader11000 | Date: {{ now }}</h5>
         
         {% if not proxies %}
-        <div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">
-            لا توجد بروكسيات متاحة حالياً!
-            <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            No proxies available at the moment!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endif %}
 
-        <form method=\"POST\" class=\"card card-body shadow-sm\">
-            <input type=\"text\" name=\"domain\" class=\"form-control\" placeholder=\"أدخل رابط موقع أو IP\" required>
-            <select name=\"proxy_speed\" class=\"form-select mt-2\">
-                <option value=\"fast\">سريعة</option>
-                <option value=\"all\">كل السرعات</option>
+        <form method="POST" class="card card-body shadow-sm">
+            <input type="text" name="domain" class="form-control" placeholder="Enter website or IP address" required>
+            <select name="proxy_speed" class="form-select mt-2">
+                <option value="fast">Fast</option>
+                <option value="all">All speeds</option>
             </select>
-            <button type=\"submit\" class=\"btn btn-primary mt-3\">بدء الفحص</button>
+            <button type="submit" class="btn btn-primary mt-3">Start Scan</button>
         </form>
 
-        <form action=\"/shutdown\" method=\"post\" class=\"d-inline\">
-            <button type=\"submit\" class=\"btn btn-danger mt-3\">إيقاف السيرفر</button>
+        <form action="/shutdown" method="post" class="d-inline">
+            <button type="submit" class="btn btn-danger mt-3">Stop Server</button>
         </form>
-        <form action=\"/restart\" method=\"post\" class=\"d-inline\">
-            <button type=\"submit\" class=\"btn btn-warning mt-3\">إعادة التشغيل</button>
+        <form action="/restart" method="post" class="d-inline">
+            <button type="submit" class="btn btn-warning mt-3">Restart Server</button>
         </form>
 
         {% if results %}
-        <div class=\"mt-5 text-start\">
-            <h4>نتائج الفحص:</h4>
-            <ul class=\"list-group\">
+        <div class="mt-5 text-start">
+            <h4>Scan Results:</h4>
+            <ul class="list-group">
                 {% for res in results %}
-                <li class=\"list-group-item\">
+                <li class="list-group-item">
                     <strong>{{ res['site'] }}</strong><br>
                     IP: {{ res['ip'] }}<br>
-                    CMS: {{ res['cms'] or 'غير معروف' }}
+                    CMS: {{ res['cms'] or 'Unknown' }}
                 </li>
                 {% endfor %}
             </ul>
         </div>
         {% endif %}
     </div>
-    <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js\"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>"""
 
@@ -102,7 +102,7 @@ def scan_domain(domain, use_fast_proxies=True):
     def worker(site):
         cms = detect_cms(site)
         with lock:
-            results.append({\"site\": site, \"ip\": ip, \"cms\": cms})
+            results.append({"site": site, "ip": ip, "cms": cms})
 
     for site in sites:
         t = threading.Thread(target=worker, args=(site,))
@@ -129,13 +129,13 @@ def index():
 def shutdown():
     pid = os.getpid()
     os.kill(pid, signal.SIGTERM)
-    return "تم إيقاف السيرفر نهائيًا."
+    return "Server stopped successfully."
 
 @app.route("/restart", methods=["POST"])
 def restart():
     python = sys.executable
     os.execl(python, python, *sys.argv)
-    return "جارٍ إعادة تشغيل السيرفر..."
+    return "Restarting server..."
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
